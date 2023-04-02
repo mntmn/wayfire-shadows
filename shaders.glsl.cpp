@@ -6,10 +6,8 @@
 
 const std::string winshadows::shadow_renderer_t::shadow_vert_shader = 
 R"(
-#version 300 es
-
-in mediump vec2 position;
-out mediump vec2 uvpos;
+attribute mediump vec2 position;
+varying mediump vec2 uvpos;
 
 uniform mat4 MVP;
 
@@ -25,17 +23,13 @@ void main() {
 // All definitions are inserted in the shader, the shader compiler will remove unused ones
 const std::string fragment_header =
 R"(
-#version 300 es
 precision highp float;
-in vec2 uvpos;
-out vec4 fragColor;
+varying vec2 uvpos;
 uniform vec2 lower;
 uniform vec2 upper;
 uniform vec4 color;
 
 uniform float sigma;
-
-uniform sampler2D dither_texture;
 
 /* Gaussian shadow */
 
@@ -202,11 +196,6 @@ float lightThreshold(float x, float minThreshold) {
     return max(x - minThreshold, 0.0);
 }
 
-vec4 dither(vec2 pos) {
-    vec2 size = vec2(textureSize(dither_texture, 0));
-    return texture(dither_texture, pos / size) / 256.0 - 0.5 / 256.0;
-}
-
 // TODO: make configurable?
 //#define CIRCULAR_SHADOW
 )";
@@ -231,8 +220,7 @@ void main()
         color * boxGaussian(lower, upper, uvpos, sigma) +
 #endif
         glow_intensity * glow_color * lightThreshold(glow_value, glow_threshold);
-    out_color += dither(uvpos + lower*upper);
-    fragColor = out_color ;
+    gl_FragColor = out_color ;
 }
 )";
 
@@ -249,7 +237,6 @@ void main()
 #else
     out_color = color * boxGaussian(lower, upper, uvpos, sigma);
 #endif
-    out_color += dither(uvpos + lower*upper);
-    fragColor = out_color ;
+    gl_FragColor = out_color ;
 }
 )";

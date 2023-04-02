@@ -22,8 +22,6 @@ class shadow_renderer_t {
     private:
         OpenGL::program_t shadow_program;
         OpenGL::program_t shadow_glow_program;
-        GLuint dither_texture;
-        void generate_dither_texture();
 
         wf::geometry_t glow_geometry;
         wf::geometry_t shadow_geometry;
